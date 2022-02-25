@@ -81,7 +81,7 @@ def insert_set(st):
 			logfile = open(S.Dir_path + '/log/' + str(date), 'r')
 			problem_list = logfile.readlines()
 			for problem in problem_list:
-				st.add(problem.strip(os.linesep))
+				st.add(problem.strip('\n'))
 			logfile.close()
 		else:
 			continue
@@ -144,10 +144,10 @@ def create_contest():
 	driver.find_element(by = By.XPATH, value = '//*[@id="root"]/div/div[2]/div[5]/div/div/div/button').click()
 	driver.find_element(by = By.XPATH, value = '//*[@id="root"]/div/div[2]/div[5]/div/div/div/div/button[' + str(S.Mode) + ']').click()
 	driver.find_element(by = By.XPATH, value = '//*[@id="root"]/div/div[2]/div[6]/div/input').send_keys(back_space + str(S.Penalty))
-	driver.find_element(by = By.XPATH, value = '//*[@id="root"]/div/div[2]/div[7]/div/div/input').send_keys(str(T.Start.year) + Keys.ARROW_RIGHT + str(T.Start.month) + Keys.ARROW_RIGHT + str(T.Start.day))
+	driver.find_element(by = By.XPATH, value = '//*[@id="root"]/div/div[2]/div[7]/div/div/input').send_keys(str(T.Start.year).zfill(6) + '/' + str(T.Start.month) + '/' + str(T.Start.day))
 	Select(driver.find_element(by = By.XPATH, value = '//*[@id="root"]/div/div[2]/div[7]/div/div/select[1]')).select_by_index(T.Start.hour)
 	Select(driver.find_element(by = By.XPATH, value = '//*[@id="root"]/div/div[2]/div[7]/div/div/select[2]')).select_by_index(int(T.Start.minute / 5))
-	driver.find_element(by = By.XPATH, value = '//*[@id="root"]/div/div[2]/div[8]/div/div/input').send_keys(str(T.End_time.year) + Keys.ARROW_RIGHT + str(T.End_time.month) + Keys.ARROW_RIGHT + str(T.End_time.day))
+	driver.find_element(by = By.XPATH, value = '//*[@id="root"]/div/div[2]/div[8]/div/div/input').send_keys(str(T.End_time.year).zfill(6) + '/' + str(T.End_time.month) + '/' + str(T.End_time.day))
 	Select(driver.find_element(by = By.XPATH, value = '//*[@id="root"]/div/div[2]/div[8]/div/div/select[1]')).select_by_index(T.End_time.hour)
 	Select(driver.find_element(by = By.XPATH, value = '//*[@id="root"]/div/div[2]/div[8]/div/div/select[2]')).select_by_index(int(T.End_time.minute / 5))
 	driver.find_element(by = By.XPATH, value = '//*[@id="root"]/div/div[2]/div[9]/div/input').send_keys(S.Expected_Participants)
@@ -174,7 +174,7 @@ def create_contest():
 			problem_id = driver.find_element(by = By.XPATH, value = '//*[@id="root"]/div/div[2]/div[10]/div/div/div/table/tbody/tr[' + str(n + 1) + ']').get_attribute('data-rbd-draggable-id')
 			if 'abc' in problem_id or not S.ABC_Only:
 				if not problem_id in recently_set:
-					logfile.write(problem_id + os.linesep)
+					logfile.write(problem_id + '\n')
 					break
 			del_button = driver.find_element(by = By.XPATH, value = '//*[@id="root"]/div/div[2]/div[10]/div/div/div/table/tbody/tr[' + str(n + 1) + ']/td[5]/button')
 			driver.execute_script("arguments[0].click();", del_button)
@@ -215,21 +215,23 @@ def main():
 			create_contest()
 
 	except SystemExit as e:
-		errlog = open(S.Dir_path + '/err/' + str(datetime.datetime.now()), 'w')
+		errlog = open(S.Dir_path + '/err/' + str(datetime.datetime.now().date()), 'a')
+		errlog.write('\n\n' + str(datetime.datetime.now()) + '\n')
 		errlog.write(str(e))
 		errlog.close()
 		print(str(e))
 
 	except Exception:
-		errlog = open(S.Dir_path + '/err/' + str(datetime.datetime.now()), 'w')
+		errlog = open(S.Dir_path + '/err/' + str(datetime.datetime.now().date()), 'a')
 		msg = traceback.format_exc()
+		errlog.write('\n\n' + str(datetime.datetime.now()) + '\n')
 		errlog.write(msg)
 		errlog.close()
 		print(msg + '\nエラーが発生しました\n')
 
 	else:
 		if S.discordbot and not S.bot_off:
-			subprocess.call('python3 ' + S.Dir_path + 'discordbot.py "' + bot_msg + '"', shell = True)
+			subprocess.call('python3 ' + S.Dir_path + '/discordbot.py "' + bot_msg + '"', shell = True)
 
 	finally:
 		driver.quit()
